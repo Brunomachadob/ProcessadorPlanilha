@@ -140,7 +140,7 @@ public class ProcessadorPlanilha {
 		return valor;
 	}
 
-	private Transformador getTransformador(String nome) {
+	public static Transformador getTransformador(String nome) {
 		Transformador transformador = transformadoresCache.get(nome);
 
 		if (transformador == null) {

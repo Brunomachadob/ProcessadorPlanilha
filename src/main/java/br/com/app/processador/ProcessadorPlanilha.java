@@ -3,9 +3,9 @@ package br.com.app.processador;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.hssf.util.CellReference;
@@ -42,10 +42,6 @@ public class ProcessadorPlanilha {
 			throw new IllegalStateException("Arquivo a ser processado não foi informado.");
 		}
 
-		if (this.planilha == null) {
-			throw new IllegalStateException("Arquivo a ser salvo não foi informado.");
-		}
-
 		if (this.cfg == null) {
 			throw new IllegalStateException("Configuração de processamento não foi informado.");
 		}
@@ -63,7 +59,7 @@ public class ProcessadorPlanilha {
 				listener.iniciou(abaOrigem.getPhysicalNumberOfRows());
 			}
 
-			abaOrigem.rowIterator().forEachRemaining((linha) -> {
+			abaOrigem.rowIterator().forEachRemaining(linha -> {
 				processarLinha(resultado, linha, abaDestino);
 				
 				if (listener != null) {
@@ -87,7 +83,7 @@ public class ProcessadorPlanilha {
 
 				destino.write(new FileOutputStream(resultado.planilhaProcessada));
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			resultado.erros.add(new ErroImportacao("geral", "Falha ao processar planilha.\n" + e.getMessage()));
 		}
 
@@ -98,7 +94,7 @@ public class ProcessadorPlanilha {
 		Row linhaDestino = abaDestino.createRow(linha.getRowNum());
 
 		try {
-			cfg.colunas.forEach((cfgColuna) -> {
+			cfg.colunas.forEach(cfgColuna -> {
 				int colIndex = CellReference.convertColStringToIndex(cfgColuna.nome);
 
 				Cell celulaOrigem = linha.getCell(colIndex);
@@ -113,7 +109,7 @@ public class ProcessadorPlanilha {
 					}
 				} else {
 					try {
-						Object valor = processarCelula(resultado, celulaOrigem, cfgColuna.processadores);
+						Object valor = processarCelula(celulaOrigem, cfgColuna.processadores);
 
 						PlanilhaUtil.setValorCelula(celulaDestino, valor);
 					} catch (Exception e) {
@@ -121,12 +117,12 @@ public class ProcessadorPlanilha {
 					}
 				}
 			});
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			PlanilhaUtil.tratarErroLinha("origem", resultado, linhaDestino, e);
 		}
 	}
 
-	public Object processarCelula(ResultadoProcessamento resultado, Cell celulaOrigem, ArrayList<String> processadores) {
+	private Object processarCelula(Cell celulaOrigem, List<String> processadores) {
 		Object valor = PlanilhaUtil.getValorCelula(celulaOrigem);
 
 		if (valor != null && processadores != null) {
@@ -148,7 +144,7 @@ public class ProcessadorPlanilha {
 				transformador = (Transformador) Class.forName("br.com.app.processador.transformadores." + nome)
 						.newInstance();
 				transformadoresCache.put(nome, transformador);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new IllegalStateException(
 						"Não foi possível carregar o transformador '" + nome + "', motivo: " + e.getMessage(), e);
 			}

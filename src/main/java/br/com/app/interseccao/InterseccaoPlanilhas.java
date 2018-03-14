@@ -14,7 +14,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import br.com.app.util.LinhaPlanilha;
 import br.com.app.util.PlanilhaUtil;
-import br.com.app.util.PlanilhaUtil.PreenchimentoListener;
 import br.com.app.util.ResultadoProcessamento;
 import br.com.app.util.ResultadoProcessamento.ErroImportacao;
 
@@ -54,23 +53,15 @@ public class InterseccaoPlanilhas {
 			ArrayList<LinhaPlanilha> listaPlanilhaNova = processarAbaPlanilha("nova", resultado, abaPlanilaNova);
 
 			if (resultado.erros.isEmpty()) {
-				for (LinhaPlanilha linhaAntiga : listaPlanilhaAntiga) {
-					if (!(linhaAntiga.getIndice() == 0 && cfg.temCabecalho)) {
-						listaPlanilhaNova.remove(linhaAntiga);
-					}
-				}
+				removerDuplicados(listaPlanilhaAntiga, listaPlanilhaNova);
 				
 				if (listener != null) {
 					listener.iniciouEscrita(listaPlanilhaNova.size());
 				}
 				
-				PlanilhaUtil.preencherPlanilha(abaDestino, listaPlanilhaNova, new PreenchimentoListener() {
-					
-					@Override
-					public void criouLinha(int linha) {
-						if (listener != null) {
-							listener.leuLinha(linha + 1);
-						}
+				PlanilhaUtil.preencherPlanilha(abaDestino, listaPlanilhaNova, linha -> {
+					if (listener != null) {
+						listener.leuLinha(linha + 1);
 					}
 				});
 				
@@ -89,18 +80,26 @@ public class InterseccaoPlanilhas {
 
 				wbDestino.write(new FileOutputStream(resultado.planilhaProcessada));
 			}
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			resultado.erros.add(new ErroImportacao("geral", "Falha ao processar planilha.\n" + e.getMessage()));
 		}
 
 		return resultado;
 	}
 
+	private void removerDuplicados(ArrayList<LinhaPlanilha> listaPlanilhaAntiga, ArrayList<LinhaPlanilha> listaPlanilhaNova) {
+		for (LinhaPlanilha linhaAntiga : listaPlanilhaAntiga) {
+			if (!(linhaAntiga.getIndice() == 0 && cfg.temCabecalho)) {
+				listaPlanilhaNova.remove(linhaAntiga);
+			}
+		}
+	}
+
 	private ArrayList<LinhaPlanilha> processarAbaPlanilha(String nomePlanilha, ResultadoProcessamento resultado,
 			XSSFSheet abaPlanila1) {
 		ArrayList<LinhaPlanilha> listaPlanilha = new ArrayList<>();
 
-		abaPlanila1.rowIterator().forEachRemaining((linha) -> {
+		abaPlanila1.rowIterator().forEachRemaining(linha -> {
 			listaPlanilha.add(processarLinha(nomePlanilha, resultado, linha));
 
 			if (listener != null) {
@@ -115,14 +114,14 @@ public class InterseccaoPlanilhas {
 		ArrayList<Object> linhaProcessada = new ArrayList<>();
 
 		try {
-			cfg.colunas.forEach((nomeColuna) -> {
+			cfg.colunas.forEach(nomeColuna -> {
 				int colIndex = CellReference.convertColStringToIndex(nomeColuna);
 
 				Cell celulaOrigem = linha.getCell(colIndex);
 
 				linhaProcessada.add(PlanilhaUtil.getValorCelula(celulaOrigem));
 			});
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			PlanilhaUtil.tratarErroLinha(nomePlanilha, resultado, linha, e);
 		}
 

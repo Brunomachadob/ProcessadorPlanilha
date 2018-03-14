@@ -1,6 +1,7 @@
 package br.com.app;
 
-import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -11,22 +12,21 @@ import br.com.app.view.AppInterseccaoPlanilhaView;
 import br.com.app.view.AppProcessaPlanilhaView;
 
 public class Main {
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getSimpleName());
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e1) {
+			LOGGER.log(Level.INFO, e1.getMessage(), e1);
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				MainApp app = new MainApp();
-				app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				app.setSize(450, 300);
-				app.setLocationRelativeTo(null);
-				app.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			MainApp app = new MainApp();
+			app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			app.setSize(450, 300);
+			app.setLocationRelativeTo(null);
+			app.setVisible(true);
 		});
 
 	}

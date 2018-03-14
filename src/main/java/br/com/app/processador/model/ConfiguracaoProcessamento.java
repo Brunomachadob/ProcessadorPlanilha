@@ -8,8 +8,24 @@ import javax.persistence.Id;
 public class ConfiguracaoProcessamento {
 	
 	@Id
-	String id;
+	private String id;
 	
 	@Column
-	String descricao;
+	private String descricao;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
 }

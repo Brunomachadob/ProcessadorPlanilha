@@ -10,9 +10,8 @@ import br.com.app.view.componentes.dataset.DatasetObserver;
 public class DBLabel<T> extends JLabel implements DatasetObserver<T> {
 	private static final long serialVersionUID = 1L;
 	
-	private Dataset<T> dataset;
-
-	private Function<T, String> entityToString;
+	private transient Dataset<T> dataset;
+	private transient Function<T, String> entityToString;
 
 	public DBLabel(Dataset<T> dataset, Function<T, String> entityToString) {
 		super();

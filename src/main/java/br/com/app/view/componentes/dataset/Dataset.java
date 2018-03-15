@@ -1,7 +1,10 @@
 package br.com.app.view.componentes.dataset;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import br.com.app.dao.GenericDAO;
 
@@ -13,16 +16,38 @@ public class Dataset<T> {
 
 	int index = -1;
 
+	Map<String, List<FieldBinder>> fieldBinders;
 	List<DatasetObserver<T>> observers;
+
+	Map<String, DatasetFieldBridge<T>> fieldBridges;
 
 	public Dataset(GenericDAO<T> dao) {
 		this.records = new ArrayList<>();
 		this.observers = new ArrayList<>();
+		this.fieldBinders = new HashMap<>();
+		this.fieldBridges = new HashMap<>();
+		
 		this.dao = dao;
 	}
 
 	public void addObserver(DatasetObserver<T> obs) {
 		this.observers.add(obs);
+	}
+
+	public void addFieldBinder(FieldBinder fieldBinder) {
+		String fieldName = fieldBinder.getFieldName();
+
+		fieldBinders.compute(fieldName, (key, value) -> {
+			if (value == null) {
+				value = new ArrayList<>();
+			}
+
+			value.add(fieldBinder);
+
+			return value;
+		});
+
+		refreshFieldBinder(fieldBinder);
 	}
 
 	public void goToInsertion(T entity) {
@@ -31,11 +56,12 @@ public class Dataset<T> {
 	}
 
 	public void load() {
+		this.index = -1;
 		records = dao.list();
 
 		resetState();
 
-		if (records.size() > 0) {
+		if (!empty()) {
 			setIndex(0);
 		}
 	}
@@ -73,13 +99,35 @@ public class Dataset<T> {
 	public void setIndex(int index) {
 		if (isValidIndex(index)) {
 			this.index = index;
-			fireLineChange();
+
+			refreshFieldBinders();
+
+			T currentEntity = getCurrentEntity();
+			observers.forEach(obs -> obs.currentLineChange(index, currentEntity));
 		}
 	}
+	
+	public void setModified(FieldBinder binder) {
+		DatasetFieldBridge<T> brigde = fieldBridges.get(binder.getFieldName());
+	}
 
-	private void fireLineChange() {
-		T currentEntity = getCurrentEntity();
-		observers.forEach(obs -> obs.currentLineChange(index, currentEntity));
+	private void refreshFieldBinders() {
+		fieldBinders.values().forEach(list -> list.forEach(this::refreshFieldBinder));
+	}
+
+	private void refreshFieldBinder(FieldBinder fieldBinder) {
+		DatasetFieldBridge<T> brigde = fieldBridges.get(fieldBinder.getFieldName());
+
+		if (brigde != null) {
+			T entity = getCurrentEntity();
+			Object value = null;
+
+			if (entity != null) {
+				value = brigde.entityToData.apply(getCurrentEntity());
+			}
+
+			fieldBinder.setData(value);
+		}
 	}
 
 	private boolean isValidIndex(int index) {
@@ -122,21 +170,20 @@ public class Dataset<T> {
 			setIndex(records.size() - 1);
 		}
 	}
-	
+
 	public void save() {
 		this.dao.save(dirty);
 		this.records.add(dirty);
 		this.dirty = null;
-		this.index = size() - 1;
-		fireLineChange();
+		setIndex(size() - 1);
 	}
-	
+
 	public void remove() {
 		if (!isDirty()) {
 			T entity = getCurrentEntity();
 			this.dao.remove(entity);
 			this.records.remove(entity);
-			
+
 			if (empty()) {
 				setIndex(-1);
 			} else if (index > 0) {
@@ -145,4 +192,17 @@ public class Dataset<T> {
 		}
 	}
 
+	public void addEntityField(String field, EntityToData<T> entityToData) {
+		DatasetFieldBridge<T> bridge = new DatasetFieldBridge<>();
+		bridge.entityToData = entityToData;
+
+		this.fieldBridges.put(field, bridge);
+	}
+
+	public static class DatasetFieldBridge<T> {
+		EntityToData<T> entityToData;
+	}
+
+	public static interface EntityToData<T> extends Function<T, Object> {
+	}
 }

@@ -11,8 +11,8 @@ public class Main {
 //		Dataset<ConfiguracaoProcessamento> dataset = new Dataset<>(new GenericDAO<>(ConfiguracaoProcessamento.class));
 //		
 //		ConfiguracaoProcessamento cfg = new ConfiguracaoProcessamento();
-//		cfg.setDescricao("Teste2");
-//		cfg.setId("idTeste2");
+//		cfg.setDescricao("Teste3");
+//		cfg.setId("idTeste3");
 //		
 //		dataset.goToInsertion(cfg);
 //		dataset.save();

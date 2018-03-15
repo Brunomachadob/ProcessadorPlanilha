@@ -1,16 +1,22 @@
 package br.com.app;
 
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
+import br.com.app.util.WeldUtil;
 
 public class Main {
 
 	public static void main(String[] args) {
-		Weld weld = new Weld();
-		WeldContainer container = weld.initialize();
-		Application application = container.instance().select(Application.class).get();
+		Application application = WeldUtil.select(Application.class);
 		application.run();
-		weld.shutdown();
+		
+//		Dataset<ConfiguracaoProcessamento> dataset = new Dataset<>(new GenericDAO<>(ConfiguracaoProcessamento.class));
+//		
+//		ConfiguracaoProcessamento cfg = new ConfiguracaoProcessamento();
+//		cfg.setDescricao("Teste2");
+//		cfg.setId("idTeste2");
+//		
+//		dataset.goToInsertion(cfg);
+//		dataset.save();
+		
 	}
 
 }

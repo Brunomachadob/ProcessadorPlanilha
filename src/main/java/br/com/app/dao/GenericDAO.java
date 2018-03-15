@@ -2,15 +2,17 @@ package br.com.app.dao;
 
 import java.util.List;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
-@Dependent
 public class GenericDAO<T> {
 
-	@Inject
-	EntityManager em;
+	private EntityManager em = EntityManagerUtil.getEntityManager();
+
+	protected Class<T> entityClass;
+
+	public GenericDAO(Class<T> entityClass) {
+		this.entityClass = entityClass;
+	}
 
 	public T save(T toPersist) {
 		try {
@@ -27,9 +29,9 @@ public class GenericDAO<T> {
 			throw e;
 		}
 	}
-	
-	public List<T> list(String query, Class<T> clazz) {
-		return em.createQuery(query, clazz).getResultList();
+
+	public List<T> list() {
+		return em.createQuery("from " + entityClass.getSimpleName(), entityClass).getResultList();
 	}
 
 	public void remove(T toRemove) {

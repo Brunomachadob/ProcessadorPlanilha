@@ -4,10 +4,10 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -26,13 +26,23 @@ import br.com.app.view.componentes.SeletorArquivo;
 
 public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger LOGGER = Logger.getLogger(AppProcessaPlanilhaView.class.getSimpleName());
 
+
+	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json");
+	SeletorArquivo seletorPlanilha = new SeletorArquivo("planilha", "xlsx");
+	
+	
 	JProgressBar progresso;
 	JButton btnProcessar;
 
 	public AppProcessaPlanilhaView() {
-		GridLayout gridLayout = new GridLayout(2, 1);
+		GridLayout gridLayout = new GridLayout(4, 1);
 		setLayout(gridLayout);
+		
+		add(seletorCfg);
+		add(seletorPlanilha);
 
 		progresso = new JProgressBar();
 		progresso.setMinimum(0);
@@ -45,7 +55,15 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent evt) {
-		File planilha = SeletorArquivo.openChooser("planilha", "xlsx");
+		File arquivoCfg = seletorCfg.getArquivoSelecionado();
+		
+		if (arquivoCfg == null) {
+			JOptionPane.showMessageDialog(this, "Informe a configuração.", "Campos obrigatórios",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		
+		File planilha = seletorPlanilha.getArquivoSelecionado();
 
 		if (planilha == null) {
 			JOptionPane.showMessageDialog(this, "Informe a planilha.", "Campos obrigatórios",
@@ -56,8 +74,7 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 		ConfiguracaoProcessamento cfg;
 
 		try {
-			File cfgFile = new File(getClass().getClassLoader().getResource("configPlanilha.json").getFile());
-			cfg = new GsonBuilder().create().fromJson(new FileReader(cfgFile), ConfiguracaoProcessamento.class);
+			cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoProcessamento.class);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao carregar configuração",
 					JOptionPane.ERROR_MESSAGE);
@@ -68,13 +85,11 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 		progresso.setMaximum(0);
 
 		ProcessarWorker worker = new ProcessarWorker(planilha, cfg);
-		worker.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("progresso".equals(evt.getPropertyName())) {
-					progresso.setValue((Integer) evt.getNewValue());
-				} else if ("quantidadeLinhas".equals(evt.getPropertyName())) {
-					progresso.setMaximum((Integer) evt.getNewValue());
-				}
+		worker.addPropertyChangeListener(event -> {
+			if ("progresso".equals(event.getPropertyName())) {
+				progresso.setValue((Integer) event.getNewValue());
+			} else if ("quantidadeLinhas".equals(event.getPropertyName())) {
+				progresso.setMaximum((Integer) event.getNewValue());
 			}
 		});
 		worker.execute();
@@ -117,7 +132,7 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 					erroDialog.setVisible(true);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOGGER.log(Level.SEVERE, "Falha ao processar planilha", e);
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao processar planilha",
 						JOptionPane.ERROR_MESSAGE);
 			} finally {

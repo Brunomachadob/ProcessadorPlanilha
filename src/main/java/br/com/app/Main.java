@@ -1,22 +1,45 @@
 package br.com.app;
 
-import br.com.app.util.WeldUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
+
+import br.com.app.view.AppInterseccaoPlanilhaView;
+import br.com.app.view.AppProcessaPlanilhaView;
 
 public class Main {
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getSimpleName());
 
 	public static void main(String[] args) {
-		Application application = WeldUtil.select(Application.class);
-		application.run();
-		
-//		Dataset<ConfiguracaoProcessamento> dataset = new Dataset<>(new GenericDAO<>(ConfiguracaoProcessamento.class));
-//		
-//		ConfiguracaoProcessamento cfg = new ConfiguracaoProcessamento();
-//		cfg.setDescricao("Teste3");
-//		cfg.setId("idTeste3");
-//		
-//		dataset.goToInsertion(cfg);
-//		dataset.save();
-		
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e1) {
+			LOGGER.log(Level.INFO, e1.getMessage(), e1);
+		}
+
+		MainAppFrame app = new MainAppFrame();
+		app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		app.setSize(450, 300);
+		app.setLocationRelativeTo(null);
+		app.setVisible(true);
+	}
+
+	private static class MainAppFrame extends JFrame {
+		private static final long serialVersionUID = 1L;
+
+		public MainAppFrame() {
+			super("Processamento de planilhas");
+
+			JTabbedPane abas = new JTabbedPane();
+
+			abas.addTab("Processar planilha", null, new AppProcessaPlanilhaView());
+			abas.addTab("Intersecção planilhas", null, new AppInterseccaoPlanilhaView());
+
+			add(abas);
+		}
 	}
 
 }

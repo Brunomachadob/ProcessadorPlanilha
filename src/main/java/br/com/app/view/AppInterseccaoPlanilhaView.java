@@ -4,10 +4,10 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -25,8 +25,13 @@ import br.com.app.view.componentes.PlanilhaErroDialog;
 import br.com.app.view.componentes.SeletorArquivo;
 
 public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener {
-	private static final long serialVersionUID = 1L;
+	private static final String QUANTIDADE_LINHAS = "quantidadeLinhas";
 
+	private static final long serialVersionUID = 1L;
+	
+	private static final Logger LOGGER = Logger.getLogger(AppInterseccaoPlanilhaView.class.getSimpleName());
+
+	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json");
 	SeletorArquivo seletorPlanilha1 = new SeletorArquivo("planilha antiga", "xlsx");
 	SeletorArquivo seletorPlanilha2 = new SeletorArquivo("planilha nova", "xlsx");
 
@@ -34,9 +39,10 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 	JButton btnProcessar;
 
 	public AppInterseccaoPlanilhaView() {
-		GridLayout gridLayout = new GridLayout(4, 1);
+		GridLayout gridLayout = new GridLayout(5, 1);
 		setLayout(gridLayout);
-
+		
+		add(seletorCfg);
 		add(seletorPlanilha1);
 		add(seletorPlanilha2);
 
@@ -51,6 +57,14 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 	}
 
 	public void actionPerformed(ActionEvent evt) {
+		File arquivoCfg = seletorCfg.getArquivoSelecionado();
+		
+		if (arquivoCfg == null) {
+			JOptionPane.showMessageDialog(this, "Informe a configuração.", "Campos obrigatórios",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		
 		File planilha1 = seletorPlanilha1.getArquivoSelecionado();
 		File planilha2 = seletorPlanilha2.getArquivoSelecionado();
 
@@ -63,8 +77,7 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 		ConfiguracaoInterseccao cfg;
 
 		try {
-			File cfgFile = new File(getClass().getClassLoader().getResource("configInterseccao.json").getFile());
-			cfg = new GsonBuilder().create().fromJson(new FileReader(cfgFile), ConfiguracaoInterseccao.class);
+			cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoInterseccao.class);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao carregar configuração",
 					JOptionPane.ERROR_MESSAGE);
@@ -75,14 +88,12 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 		progresso.setMaximum(0);
 
 		ProcessarWorker worker = new ProcessarWorker(planilha1, planilha2, cfg);
-		worker.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("progresso".equals(evt.getPropertyName())) {
-					progresso.setValue((Integer) evt.getNewValue());
-				} else if ("quantidadeLinhas".equals(evt.getPropertyName())) {
-					progresso.setValue(0);
-					progresso.setMaximum((Integer) evt.getNewValue());
-				}
+		worker.addPropertyChangeListener(event -> {
+			if ("progresso".equals(event.getPropertyName())) {
+				progresso.setValue((Integer) event.getNewValue());
+			} else if (QUANTIDADE_LINHAS.equals(event.getPropertyName())) {
+				progresso.setValue(0);
+				progresso.setMaximum((Integer) event.getNewValue());
 			}
 		});
 		worker.execute();
@@ -113,12 +124,12 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 					
 					@Override
 					public void iniciouLeitura(int quantidadeLinhas) {
-						firePropertyChange("quantidadeLinhas", 0, quantidadeLinhas);
+						firePropertyChange(QUANTIDADE_LINHAS, 0, quantidadeLinhas);
 					}
 					
 					@Override
 					public void iniciouEscrita(int quantidadeLinhas) {
-						firePropertyChange("quantidadeLinhas", 0, quantidadeLinhas);
+						firePropertyChange(QUANTIDADE_LINHAS, 0, quantidadeLinhas);
 					}
 				});
 
@@ -133,7 +144,7 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 					erroDialog.setVisible(true);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOGGER.log(Level.SEVERE, "Falha ao processar planilha", e);
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao processar planilha",
 						JOptionPane.ERROR_MESSAGE);
 			} finally {

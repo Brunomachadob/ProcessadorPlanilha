@@ -27,7 +27,7 @@
 							<archive>
 								<manifest>
 									<mainClass>
-										br.com.processador.Main
+										br.com.app.Main
 									</mainClass>
 								</manifest>
 							</archive>

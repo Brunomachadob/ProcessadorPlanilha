@@ -1,5 +1,7 @@
 package br.com.app.processador.transformadores;
 
+import java.math.BigDecimal;
+
 import br.com.app.processador.Transformador;
 
 public class ConverterTexto implements Transformador {
@@ -11,7 +13,7 @@ public class ConverterTexto implements Transformador {
 		} else if (valor instanceof String) {
 			return (String) valor;
 		} else if (valor instanceof Number) {
-			return ((Number) valor).toString();
+			return new BigDecimal(((Number) valor).toString()).toPlainString();
 		} else {
 			return null;
 		}

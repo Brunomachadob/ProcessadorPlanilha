@@ -22,8 +22,6 @@ public class PlanilhaErroDialog extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		JTable table = new JTable(new TableModel(erros));
-		table.getColumnModel().getColumn(0).setMaxWidth(100);
-		table.getColumnModel().getColumn(0).setMinWidth(100);
 
 		add(new JScrollPane(table), BorderLayout.CENTER);
 	}

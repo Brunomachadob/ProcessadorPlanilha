@@ -1,14 +1,15 @@
 package br.com.app.util;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class LinhaPlanilha {
 	private int hash = -1;
 	private int indice;
 	
-	private ArrayList<Object> valores;
+	private List<Object> valores;
 
-	public LinhaPlanilha(int indice, ArrayList<Object> valores) {
+	public LinhaPlanilha(int indice, List<Object> valores) {
 		this.indice = indice;
 		this.valores = valores;
 	}
@@ -17,7 +18,7 @@ public class LinhaPlanilha {
 		return indice;
 	}
 	
-	public ArrayList<Object> getValores() {
+	public List<Object> getValores() {
 		return valores;
 	}
 
@@ -28,6 +29,11 @@ public class LinhaPlanilha {
 		}
 
 		return hash;
+	}
+	
+	@Override
+	public String toString() {
+		return Arrays.toString(valores.toArray());
 	}
 
 	@Override

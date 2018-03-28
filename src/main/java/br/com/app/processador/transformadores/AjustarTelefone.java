@@ -4,7 +4,8 @@ import br.com.app.processador.ProcessadorPlanilha;
 import br.com.app.processador.Transformador;
 
 public class AjustarTelefone implements Transformador {
-
+	
+	private static Transformador converterTexto = ProcessadorPlanilha.getTransformador("ConverterTexto");
 	private static Transformador removerPontuacoes = ProcessadorPlanilha.getTransformador("RemoverPontuacoes");
 	private static Transformador removerEspacos = ProcessadorPlanilha.getTransformador("RemoverEspacos");
 
@@ -14,7 +15,7 @@ public class AjustarTelefone implements Transformador {
 			return null;
 		}
 
-		String telefone = (String) valor;
+		String telefone = (String) converterTexto.transformar(valor);
 
 		telefone = telefone.replaceAll("\\+55", "").replaceAll("-", "");
 

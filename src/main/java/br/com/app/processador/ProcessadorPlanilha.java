@@ -98,14 +98,13 @@ public class ProcessadorPlanilha {
 				int colIndex = CellReference.convertColStringToIndex(cfgColuna.nome);
 
 				Cell celulaOrigem = linha.getCell(colIndex);
-				Cell celulaDestino = linhaDestino.createCell(cfg.colunas.indexOf(cfgColuna),
-						celulaOrigem.getCellTypeEnum());
+				Cell celulaDestino = linhaDestino.createCell(cfg.colunas.indexOf(cfgColuna));
 
 				if (cfg.temCabecalho && linha.getRowNum() == 0) {
 					if (StringUtil.isNotEmpty(cfgColuna.descricao)) {
 						celulaDestino.setCellValue(cfgColuna.descricao);
 					} else {
-						celulaDestino.setCellValue(celulaOrigem.getStringCellValue());
+						PlanilhaUtil.setValorCelula(celulaDestino, PlanilhaUtil.getValorCelula(celulaOrigem));
 					}
 				} else {
 					try {
@@ -113,11 +112,13 @@ public class ProcessadorPlanilha {
 
 						PlanilhaUtil.setValorCelula(celulaDestino, valor);
 					} catch (Exception e) {
+						e.printStackTrace();
 						PlanilhaUtil.tratarErroCelula("origem", resultado, celulaOrigem, e);
 					}
 				}
 			});
 		} catch (Exception e) {
+			e.printStackTrace();
 			PlanilhaUtil.tratarErroLinha("origem", resultado, linhaDestino, e);
 		}
 	}

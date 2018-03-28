@@ -75,7 +75,7 @@ public class InterseccaoPlanilhas {
 					}
 				}
 				
-				String nomeDestino = planilhaAntiga.getName().replaceAll(".xlsx", "") + "Intersecção" + ".xlsx";
+				String nomeDestino = planilhaNova.getName().replaceAll(".xlsx", "") + "Intersecção" + ".xlsx";
 				resultado.planilhaProcessada = new File(planilhaAntiga.getParent(), nomeDestino);
 
 				wbDestino.write(new FileOutputStream(resultado.planilhaProcessada));
@@ -100,10 +100,12 @@ public class InterseccaoPlanilhas {
 		ArrayList<LinhaPlanilha> listaPlanilha = new ArrayList<>();
 
 		abaPlanila1.rowIterator().forEachRemaining(linha -> {
-			listaPlanilha.add(processarLinha(nomePlanilha, resultado, linha));
+			if (!PlanilhaUtil.linhaEhVazia(linha)) {
+				listaPlanilha.add(processarLinha(nomePlanilha, resultado, linha));
 
-			if (listener != null) {
-				listener.leuLinha(linha.getRowNum() + 1);
+				if (listener != null) {
+					listener.leuLinha(linha.getRowNum() + 1);
+				}
 			}
 		});
 

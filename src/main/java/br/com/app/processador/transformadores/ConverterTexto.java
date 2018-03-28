@@ -11,7 +11,7 @@ public class ConverterTexto implements Transformador {
 		if (valor == null) {
 			return null;
 		} else if (valor instanceof String) {
-			return (String) valor;
+			return ((String) valor).trim();
 		} else if (valor instanceof Number) {
 			return new BigDecimal(((Number) valor).toString()).toPlainString();
 		} else {

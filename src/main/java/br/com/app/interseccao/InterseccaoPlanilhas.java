@@ -5,10 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -46,25 +48,31 @@ public class InterseccaoPlanilhas {
 			XSSFSheet abaDestino = wbDestino.createSheet(abaPlanilaAntiga.getSheetName());
 
 			if (listener != null) {
-				listener.iniciouLeitura(abaPlanilaAntiga.getPhysicalNumberOfRows() + abaPlanilaNova.getPhysicalNumberOfRows());
+				listener.iniciouLeitura(
+						abaPlanilaAntiga.getPhysicalNumberOfRows() + abaPlanilaNova.getPhysicalNumberOfRows());
 			}
 
-			ArrayList<LinhaPlanilha> listaPlanilhaAntiga = processarAbaPlanilha("antiga", resultado, abaPlanilaAntiga);
-			ArrayList<LinhaPlanilha> listaPlanilhaNova = processarAbaPlanilha("nova", resultado, abaPlanilaNova);
+			List<Integer> colunasChave = cfg.colunas.stream().mapToInt(CellReference::convertColStringToIndex).boxed()
+					.collect(Collectors.toList());
+
+			ArrayList<LinhaPlanilha> listaPlanilhaAntiga = processarAbaPlanilha("antiga", colunasChave, resultado,
+					abaPlanilaAntiga);
+			ArrayList<LinhaPlanilha> listaPlanilhaNova = processarAbaPlanilha("nova", colunasChave, resultado,
+					abaPlanilaNova);
 
 			if (resultado.erros.isEmpty()) {
 				removerDuplicados(listaPlanilhaAntiga, listaPlanilhaNova);
-				
+
 				if (listener != null) {
 					listener.iniciouEscrita(listaPlanilhaNova.size());
 				}
-				
+
 				PlanilhaUtil.preencherPlanilha(abaDestino, listaPlanilhaNova, linha -> {
 					if (listener != null) {
 						listener.leuLinha(linha + 1);
 					}
 				});
-				
+
 				if (abaDestino.getPhysicalNumberOfRows() > 0) {
 					Row linha = abaDestino.getRow(0);
 
@@ -74,7 +82,7 @@ public class InterseccaoPlanilhas {
 						abaDestino.autoSizeColumn(celula.getColumnIndex());
 					}
 				}
-				
+
 				String nomeDestino = planilhaNova.getName().replaceAll(".xlsx", "") + "Intersecção" + ".xlsx";
 				resultado.planilhaProcessada = new File(planilhaAntiga.getParent(), nomeDestino);
 
@@ -87,7 +95,8 @@ public class InterseccaoPlanilhas {
 		return resultado;
 	}
 
-	private void removerDuplicados(ArrayList<LinhaPlanilha> listaPlanilhaAntiga, ArrayList<LinhaPlanilha> listaPlanilhaNova) {
+	private void removerDuplicados(ArrayList<LinhaPlanilha> listaPlanilhaAntiga,
+			ArrayList<LinhaPlanilha> listaPlanilhaNova) {
 		for (LinhaPlanilha linhaAntiga : listaPlanilhaAntiga) {
 			if (!(linhaAntiga.getIndice() == 0 && cfg.temCabecalho)) {
 				listaPlanilhaNova.remove(linhaAntiga);
@@ -95,13 +104,13 @@ public class InterseccaoPlanilhas {
 		}
 	}
 
-	private ArrayList<LinhaPlanilha> processarAbaPlanilha(String nomePlanilha, ResultadoProcessamento resultado,
-			XSSFSheet abaPlanila1) {
+	private ArrayList<LinhaPlanilha> processarAbaPlanilha(String nomePlanilha, List<Integer> colunasChave,
+			ResultadoProcessamento resultado, XSSFSheet abaPlanila1) {
 		ArrayList<LinhaPlanilha> listaPlanilha = new ArrayList<>();
 
 		abaPlanila1.rowIterator().forEachRemaining(linha -> {
 			if (!PlanilhaUtil.linhaEhVazia(linha)) {
-				listaPlanilha.add(processarLinha(nomePlanilha, resultado, linha));
+				listaPlanilha.add(processarLinha(nomePlanilha, colunasChave, resultado, linha));
 
 				if (listener != null) {
 					listener.leuLinha(linha.getRowNum() + 1);
@@ -112,27 +121,27 @@ public class InterseccaoPlanilhas {
 		return listaPlanilha;
 	}
 
-	public LinhaPlanilha processarLinha(String nomePlanilha, ResultadoProcessamento resultado, Row linha) {
+	public LinhaPlanilha processarLinha(String nomePlanilha, List<Integer> colunasChave,
+			ResultadoProcessamento resultado, Row linha) {
 		ArrayList<Object> linhaProcessada = new ArrayList<>();
 
 		try {
-			cfg.colunas.forEach(nomeColuna -> {
-				int colIndex = CellReference.convertColStringToIndex(nomeColuna);
-
+			for (int colIndex = 0; colIndex < linha.getLastCellNum(); colIndex++) {
 				Cell celulaOrigem = linha.getCell(colIndex);
-
 				linhaProcessada.add(PlanilhaUtil.getValorCelula(celulaOrigem));
-			});
+			}
 		} catch (Exception e) {
 			PlanilhaUtil.tratarErroLinha(nomePlanilha, resultado, linha, e);
 		}
 
-		return new LinhaPlanilha(linha.getRowNum(), linhaProcessada);
+		return new LinhaPlanilhaInterseccao(linha.getRowNum(), colunasChave, linhaProcessada);
 	}
 
 	public interface InterseccaoListener {
 		public void iniciouLeitura(int quantidadeLinhas);
+
 		public void iniciouEscrita(int quantidadeLinhas);
+
 		public void leuLinha(int linha);
 	}
 }

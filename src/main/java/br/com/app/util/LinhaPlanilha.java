@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LinhaPlanilha {
-	private int hash = -1;
-	private int indice;
+	protected int hash = -1;
+	protected int indice;
 	
-	private List<Object> valores;
+	protected List<Object> valores;
 
 	public LinhaPlanilha(int indice, List<Object> valores) {
 		this.indice = indice;

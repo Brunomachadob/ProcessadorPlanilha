@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>brunomb</groupId>
 	<artifactId>processadorplanilha</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2</version>
 	<name>ProcessadorPlanilha</name>
 	<packaging>jar</packaging>
 

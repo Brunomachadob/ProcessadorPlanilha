@@ -17,14 +17,15 @@ public class LinhaPlanilhaInterseccao extends LinhaPlanilha {
 	public int hashCode() {
 		if (hash == -1) {
 			List<Object> chaves = new ArrayList<>();
+
 			indicesChave.forEach(indice -> {
 				if (indice > valores.size()) {
 					throw new IllegalStateException("Linha com menos colunas do que exigido pela configuração.");
 				}
-				
+
 				chaves.add(valores.get(indice));
 			});
-			
+
 			hash = chaves.hashCode();
 		}
 

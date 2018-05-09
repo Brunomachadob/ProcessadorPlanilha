@@ -19,13 +19,16 @@ public class AjustarCPF implements Transformador {
 
 		cpf = (String) removerPontuacoes.transformar(cpf);
 		cpf = (String) removerEspacos.transformar(cpf);
-
-		if (cpf.length() == 10) {
-			cpf = "0" + cpf;
-		}
-
-		if (cpf.length() != 11) {
-			throw new IllegalStateException("CPF com valor inválido: " + cpf);
+		
+		
+		if (cpf.length() < 11) {
+			StringBuilder sb = new StringBuilder(cpf);
+			
+			while (sb.length() < 11) {
+				sb.insert(0, "0");
+			}
+			
+			cpf = sb.toString();
 		}
 
 		return cpf;

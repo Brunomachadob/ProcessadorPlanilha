@@ -22,7 +22,7 @@ public class Main {
 
 		MainAppFrame app = new MainAppFrame();
 		app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		app.setSize(450, 300);
+		app.setSize(550, 400);
 		app.setLocationRelativeTo(null);
 		app.setVisible(true);
 	}

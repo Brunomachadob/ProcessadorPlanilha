@@ -20,7 +20,7 @@ import com.google.gson.GsonBuilder;
 import br.com.app.interseccao.ConfiguracaoInterseccao;
 import br.com.app.interseccao.InterseccaoPlanilhas;
 import br.com.app.interseccao.InterseccaoPlanilhas.InterseccaoListener;
-import br.com.app.util.ResultadoProcessamento;
+import br.com.app.interseccao.ResultadoProcessamentoInterseccao;
 import br.com.app.view.componentes.PlanilhaErroDialog;
 import br.com.app.view.componentes.SeletorArquivo;
 
@@ -133,9 +133,12 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 					}
 				});
 
-				ResultadoProcessamento resultado = processador.processar();
+				ResultadoProcessamentoInterseccao resultado = processador.processar();
 
-				if (resultado.erros.isEmpty()) {
+				if (resultado.novaPlanilhaVazia) {
+					JOptionPane.showMessageDialog(null, "As duas planilhas são iguais.", "Processamento de planilha",
+							JOptionPane.INFORMATION_MESSAGE);
+				} else if (resultado.erros.isEmpty()) {
 					JOptionPane.showMessageDialog(null, "Planilha processada com sucesso.", "Processamento de planilha",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {

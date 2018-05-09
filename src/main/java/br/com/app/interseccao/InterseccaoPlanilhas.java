@@ -35,8 +35,8 @@ public class InterseccaoPlanilhas {
 		this.listener = listener;
 	}
 
-	public ResultadoProcessamento processar() {
-		ResultadoProcessamento resultado = new ResultadoProcessamento();
+	public ResultadoProcessamentoInterseccao processar() {
+		ResultadoProcessamentoInterseccao resultado = new ResultadoProcessamentoInterseccao();
 
 		try (XSSFWorkbook wbPlanilhaAntiga = new XSSFWorkbook(new FileInputStream(this.planilhaAntiga));
 				XSSFWorkbook wbPlanilhaNova = new XSSFWorkbook(new FileInputStream(this.planilhaNova));
@@ -47,9 +47,11 @@ public class InterseccaoPlanilhas {
 
 			XSSFSheet abaDestino = wbDestino.createSheet(abaPlanilaAntiga.getSheetName());
 
+			int qtdTotalLinhas = 
+					abaPlanilaAntiga.getPhysicalNumberOfRows() + abaPlanilaNova.getPhysicalNumberOfRows();
+			
 			if (listener != null) {
-				listener.iniciouLeitura(
-						abaPlanilaAntiga.getPhysicalNumberOfRows() + abaPlanilaNova.getPhysicalNumberOfRows());
+				listener.iniciouLeitura(qtdTotalLinhas);
 			}
 
 			List<Integer> colunasChave = cfg.colunas.stream().mapToInt(CellReference::convertColStringToIndex).boxed()
@@ -62,6 +64,16 @@ public class InterseccaoPlanilhas {
 
 			if (resultado.erros.isEmpty()) {
 				removerDuplicados(listaPlanilhaAntiga, listaPlanilhaNova);
+
+				if (listaPlanilhaNova.isEmpty() || cfg.temCabecalho && listaPlanilhaNova.size() == 1) {
+					resultado.novaPlanilhaVazia = true;
+					
+					if (listener != null) {
+						listener.leuLinha(qtdTotalLinhas);
+					}
+					
+					return resultado;
+				}
 
 				if (listener != null) {
 					listener.iniciouEscrita(listaPlanilhaNova.size());

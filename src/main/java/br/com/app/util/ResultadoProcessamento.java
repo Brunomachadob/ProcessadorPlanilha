@@ -7,7 +7,7 @@ import java.util.List;
 public class ResultadoProcessamento {
 
 	public File planilhaProcessada;
-	public List<ErroImportacao> erros;
+	public final List<ErroImportacao> erros;
 	
 	public ResultadoProcessamento() {
 		this.erros = new ArrayList<>();

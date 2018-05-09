@@ -46,6 +46,7 @@ ConverterNumero - Altera os dados de uma coluna para serem do tipo numérico
 ConverterTexto - Altera os dados de uma coluna para serem do tipo texto
 RemoverAcentos - Remove os acentos da coluna
 RemoverEspacos - Remove os espaços em branco da coluna
+RemoverEspacosSobressalentes - Remove os espaços laterais e espaços duplicados no meio do texto
 ```
 
 ### Remover linhas duplicadas entre duas planilhas

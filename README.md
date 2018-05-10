@@ -5,8 +5,10 @@ atualmente possui duas funcionalidades:
 
 ### Transformação de planilhas
 
-Através da aba 'Processar planilhas', é possível selecionar um arquivo de configuração e a planilha a ser processada.
-No objeto de configuração são informadas as colunas que devem ser enviadas a nova planilha criada e os transformações que serão aplicadas em cada coluna.
+Através da aba 'Processar planilhas', é possível selecionar um arquivo de configuração (JSON ou YAML) e a planilha a ser processada.
+Recomendamos o uso de YAML já que é um formado mais legível e de fácil manuseio.
+
+Na configuração são informadas as colunas que devem ser enviadas a nova planilha criada e as transformações que serão aplicadas em cada coluna.
 
 Exemplo de configuração:
 ```yaml
@@ -14,7 +16,7 @@ temCabecalho: true #Informamos que há um cabeçalho, assim não aplicamos trans
 
 colunas: #Configuração das colunas
 - nome: A #Informamos que queremos a coluna A
-  descricao: Nome #Que vamos alterar o nome dela para Nome
+  descricao: Nome #Que vamos alterar o nome dela para Nome, essa linha não é obrigatória, assim o nome permanecerá como o original
   processadores: #Lista de processadores (vide a lista de processadores abaixo)
   - CaixaAlta
   - RemoverAcentos

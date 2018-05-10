@@ -19,7 +19,7 @@ public class SeletorArquivo extends JPanel {
 	private JLabel planilhaLabel;
 	private File arquivoSelecionado;
 
-	public SeletorArquivo(String nome, String formato) {
+	public SeletorArquivo(String nome, String... formato) {
 		setLayout(new FlowLayout());
 
 		JButton btnArquivo = new JButton("Selecionar " + nome);
@@ -40,7 +40,7 @@ public class SeletorArquivo extends JPanel {
 		return arquivoSelecionado;
 	}
 	
-	public static File openChooser(String nome, String formato) {
+	public static File openChooser(String nome, String... formato) {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Selecione uma " + nome);
 		fileChooser.setFileFilter(new FileNameExtensionFilter(nome, formato));

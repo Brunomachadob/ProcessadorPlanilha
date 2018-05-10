@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,9 +16,14 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
 import com.google.gson.GsonBuilder;
 
 import br.com.app.processador.ConfiguracaoProcessamento;
+import br.com.app.processador.ConfiguracaoProcessamento.ConfiguracaoColuna;
 import br.com.app.processador.ProcessadorPlanilha;
 import br.com.app.processador.ProcessadorPlanilha.ProcessamentoListener;
 import br.com.app.util.ResultadoProcessamento;
@@ -29,8 +35,7 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 	
 	private static final Logger LOGGER = Logger.getLogger(AppProcessaPlanilhaView.class.getSimpleName());
 
-
-	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json");
+	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json", "yml");
 	SeletorArquivo seletorPlanilha = new SeletorArquivo("planilha", "xlsx");
 	
 	
@@ -74,7 +79,16 @@ public class AppProcessaPlanilhaView extends JPanel implements ActionListener {
 		ConfiguracaoProcessamento cfg;
 
 		try {
-			cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoProcessamento.class);
+			if (arquivoCfg.getName().endsWith(".json")) {
+				cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoProcessamento.class);
+			} else {
+				Constructor constructor = new Constructor(ConfiguracaoProcessamento.class);
+				TypeDescription configDesc = new TypeDescription(ConfiguracaoProcessamento.class);
+				configDesc.putListPropertyType("colunas", ConfiguracaoColuna.class);
+				constructor.addTypeDescription(configDesc);
+
+				cfg = new Yaml(constructor).loadAs(new FileInputStream(arquivoCfg), ConfiguracaoProcessamento.class );
+			}
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao carregar configuração",
 					JOptionPane.ERROR_MESSAGE);

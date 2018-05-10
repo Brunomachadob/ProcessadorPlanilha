@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,6 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
+
+import org.yaml.snakeyaml.Yaml;
 
 import com.google.gson.GsonBuilder;
 
@@ -31,7 +34,7 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 	
 	private static final Logger LOGGER = Logger.getLogger(AppInterseccaoPlanilhaView.class.getSimpleName());
 
-	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json");
+	SeletorArquivo seletorCfg = new SeletorArquivo("configuração", "json", "yml");
 	SeletorArquivo seletorPlanilha1 = new SeletorArquivo("planilha antiga", "xlsx");
 	SeletorArquivo seletorPlanilha2 = new SeletorArquivo("planilha nova", "xlsx");
 
@@ -77,7 +80,11 @@ public class AppInterseccaoPlanilhaView extends JPanel implements ActionListener
 		ConfiguracaoInterseccao cfg;
 
 		try {
-			cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoInterseccao.class);
+			if (arquivoCfg.getName().endsWith(".json")) {
+				cfg = new GsonBuilder().create().fromJson(new FileReader(arquivoCfg), ConfiguracaoInterseccao.class);
+			} else {
+				cfg = new Yaml().loadAs(new FileInputStream(arquivoCfg), ConfiguracaoInterseccao.class );
+			}
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Falha ao carregar configuração",
 					JOptionPane.ERROR_MESSAGE);

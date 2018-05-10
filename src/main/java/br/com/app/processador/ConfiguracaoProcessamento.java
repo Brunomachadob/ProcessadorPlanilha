@@ -1,14 +1,15 @@
 package br.com.app.processador;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ConfiguracaoProcessamento {
-	boolean temCabecalho;
-	ArrayList<ConfiguracaoColuna> colunas;
+	public boolean temCabecalho;
+	public List<ConfiguracaoColuna> colunas;
 	
 	public static class ConfiguracaoColuna {
-		String nome;
-		String descricao;
-		ArrayList<String> processadores;
+		public String nome;
+		public String descricao;
+		public List<String> processadores;
+		
 	}
 }

@@ -1,0 +1,20 @@
+temCabecalho: true
+
+colunas:
+- nome: A
+  descricao: Nome
+  processadores:
+  - CaixaAlta
+  - RemoverAcentos
+  - RemoverEspacosSobressalentes
+
+- nome: C
+  descricao: Telefone
+  processadores:
+  - AjustarTelefone
+
+- nome: D
+  descricao: CPF
+  processadores:
+  - ConverterTexto
+  - RemoverPontuacoes

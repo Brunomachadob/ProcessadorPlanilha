@@ -1,4 +1,4 @@
-## Processador de Planilhas
+## Processador de Planilhas [![Build Status](https://travis-ci.org/Brunomachadob/ProcessadorPlanilha.svg?branch=master)](https://travis-ci.org/Brunomachadob/ProcessadorPlanilha)
 
 Aplicação simples criada para realizar pequenas transformações em planilhas,
 atualmente possui duas funcionalidades:
